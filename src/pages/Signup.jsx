@@ -93,7 +93,7 @@ const Signup = () => {
       setUserAuth(data.user);
       // localStorage.setItem('user', JSON.stringify(user));
   
-      window.location.href = '/login';
+      window.location.href = 'https://claukkinvoice.netlify.app/login';
     } catch (error) {
       console.error('Error signing in:', error);
       setMsg( 'An error occurred during sign up, please check your details and try again.');

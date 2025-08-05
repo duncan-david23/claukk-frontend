@@ -33,7 +33,7 @@ const { displayConfirmClientDeleteModal, setDisplayConfirmClientDeleteModal, set
   const navigate = useNavigate();
 
   const handleClientProfilePage = (idx) => {
-      navigate(`/dashboard/clients/client-profile/${idx}`)
+      navigate(`https://claukkinvoice.netlify.app/dashboard/clients/client-profile/${idx}`)
   }
 
   // Change page

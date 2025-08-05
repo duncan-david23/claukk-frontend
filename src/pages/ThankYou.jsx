@@ -11,7 +11,7 @@ const ThankYouPage = () => {
     const businessName = localStorage.getItem('business_name') || 'Friend';
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 flex items-center justify-center p-4 ml-[-200px]">
-        <IoChevronBackCircleOutline className="w-8 h-8 text-purple-500 text-xl cursor-pointer hover:scale-110 transition-all absolute top-4 left-4" onClick={() => navigate('/dashboard')} />
+        <IoChevronBackCircleOutline className="w-8 h-8 text-purple-500 text-xl cursor-pointer hover:scale-110 transition-all absolute top-4 left-4" onClick={() => navigate('https://claukkinvoice.netlify.app/dashboard')} />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

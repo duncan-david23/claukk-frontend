@@ -91,7 +91,7 @@ const handleSubmit = async (e)=> {
         localStorage.setItem('userEmail', data.user.email);
   
       // setUserAuth(data.user);
-      navigate('/dashboard');
+      navigate('https://claukkinvoice.netlify.app/dashboard');
       notify();
   } catch (error) {
     console.error('Error signing in:', error);
@@ -101,7 +101,7 @@ const handleSubmit = async (e)=> {
 
 
  const handleForgotpassword = ()=> {
-    navigate('/forgot-password')
+    navigate('https://claukkinvoice.netlify.app/forgot-password')
  }
 
   return (

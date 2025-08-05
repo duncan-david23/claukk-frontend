@@ -19,7 +19,7 @@ const TemplatesModal = () => {
     }
 
     const handleInvoiceTemplateRedirect = (url)=> {
-        navigate(`/dashboard${url}`)
+        navigate(`https://claukkinvoice.netlify.app/dashboard${url}`)
         setDisplayTemplatesModal(false)
     }
 
