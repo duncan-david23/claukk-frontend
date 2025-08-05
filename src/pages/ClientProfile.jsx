@@ -15,6 +15,7 @@ import { supabase } from '../components/supabase';
 import { BsFillSendFill } from "react-icons/bs";
 import { CgEditBlackPoint } from "react-icons/cg";
 import { CiUser } from "react-icons/ci";
+import Loader from '../components/loader'
 
 
 const ClientProfile = () => {
@@ -30,7 +31,7 @@ const ClientProfile = () => {
     const [showNoDataMsg, setShowNoDataMsg] = useState(true)
     const notify = () => toast.success(msg);
 
-    const {setDisplayUpdateClientDataModal, clientId, setClientId, currencySymbol, displayReminderModal, setDisplayReminderModal, displayConfirmClientDeleteModal, setDisplayConfirmClientDeleteModal,} = useInvoice();
+    const {setDisplayUpdateClientDataModal, clientId, setClientId,setIsLoading, isLoading, currencySymbol, displayReminderModal, setDisplayReminderModal, displayConfirmClientDeleteModal, setDisplayConfirmClientDeleteModal,} = useInvoice();
 
      // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -155,6 +156,7 @@ const ClientProfile = () => {
         const fetchClientProfileData = async ()=> {
             const { data: { session } } = await supabase.auth.getSession()
             const accessToken = session?.access_token
+            setIsLoading(true)
         try {
             const result = await axios.get(`https://claukk-backend.onrender.com/api/users/client-profile-data/${id}`, {
                     headers: {
@@ -166,7 +168,7 @@ const ClientProfile = () => {
             setFirstCharacter(clientName && clientName.slice(0,1))
             setClientProfileData(response)
 
-    
+                setIsLoading(false)
         } catch (error) {
             console.error("an error occurred while fetching client profile data", error);
         }
@@ -207,6 +209,10 @@ const ClientProfile = () => {
 
   return (
     <>
+    {isLoading ?
+        <Loader/>
+        :
+        <>
         <Sidebar/>
         <div className='px-[15px] md:ml-[-120px] lg:ml-[1px]'>
 
@@ -391,6 +397,8 @@ const ClientProfile = () => {
         
         
         </div>
+        </>
+        }
     </>
   )
 }

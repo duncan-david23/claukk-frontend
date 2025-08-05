@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from "react";
 import { supabase } from "./supabase";
 import { Navigate } from "react-router";
+import Loader from "./loader";
 
 const AuthWrapper = ({ children }) => {
   const [authenticated, setAuthenticated] = useState(false);
@@ -19,7 +20,7 @@ const AuthWrapper = ({ children }) => {
 
 
   if (loading) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+    return <div className="flex items-center justify-center h-screen">...</div>;
   } else {
     if (authenticated) {
       return <>{children}</>;

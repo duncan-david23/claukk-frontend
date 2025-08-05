@@ -11,11 +11,12 @@ import { GrFormView } from "react-icons/gr";
 import { useInvoice } from '../contexts/InvoiceContext';
 import { IoChevronBackCircle } from "react-icons/io5";
 import { IoChevronForwardCircle } from "react-icons/io5";
+import Loader from '../components/loader'
 
 
 const Clients = () => {
 
-const { displayConfirmClientDeleteModal, setDisplayConfirmClientDeleteModal, setTargetDeleteId} = useInvoice();
+const { displayConfirmClientDeleteModal,setIsLoading, isLoading,  setDisplayConfirmClientDeleteModal, setTargetDeleteId} = useInvoice();
   const userId = localStorage.getItem('userId');
 
   const [clientData, setClientData] = useState()
@@ -44,6 +45,7 @@ const { displayConfirmClientDeleteModal, setDisplayConfirmClientDeleteModal, set
     const fetchClientsData = async ()=> {
       const { data: { session } } = await supabase.auth.getSession()
       const accessToken = session?.access_token
+      setIsLoading(true)
       try {
           const result = await axios.get(`https://claukk-backend.onrender.com/api/users/clients-data/${userId}`, {
                     headers: {
@@ -59,6 +61,7 @@ const { displayConfirmClientDeleteModal, setDisplayConfirmClientDeleteModal, set
           if (!searchTerm) {
             setClientData(response)
           }
+          setIsLoading(false)
 
       } catch (error) {
           console.error("an error occurred while fetching client data", error);
@@ -120,6 +123,11 @@ const { displayConfirmClientDeleteModal, setDisplayConfirmClientDeleteModal, set
 
   return (
     <>
+    {
+      isLoading ?
+      <Loader/>
+      :
+      <>
     <Sidebar/>
     <div className='relative pt-[50px] px-[15px] md:ml-[-120px] lg:ml-[1px]'>
       <div className='mt-[-20px] flex gap-[7px] items-center'>
@@ -225,6 +233,8 @@ const { displayConfirmClientDeleteModal, setDisplayConfirmClientDeleteModal, set
                 
     </div>            
     </div>
+    </>
+     }
     </>
   )
 }

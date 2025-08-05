@@ -18,6 +18,7 @@ export const InvoiceProvider = ({children}) => {
     const [donationAmount, setDonationAmount] = useState(0);
     const [customColor, setCustomColor] = useState('#000000');
     const [targetDeleteId, setTargetDeleteId] = useState()
+    const [isLoading, setIsLoading] = useState(false)
     
     const [invoiceInitials, setInvoiceInitials] = useState('');
     const [tNcValue, setTnCvalue] = useState('Write Something');
@@ -264,7 +265,8 @@ useEffect(() => {
         setConfirmStatus,
         targetDeleteId, setTargetDeleteId,
         displayConfirmClientDeleteModal, setDisplayConfirmClientDeleteModal,
-        displayContactUsModal, setDisplayContactUsModal
+        displayContactUsModal, setDisplayContactUsModal,
+        isLoading, setIsLoading
     }
 
 

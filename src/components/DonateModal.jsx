@@ -21,7 +21,7 @@ const DonateModal = () => {
 
   const navigate = useNavigate();
 
-  const paystackPublicKey = 'pk_test_ef70c446ab3906e0e703c6c031384ec39a4b1003'
+  const paystackPublicKey = 'pk_live_4401faab2342ac978b194c68cf04734b3fcf8bc1'
    const notify = () => toast.error('Transaction was not completed, please try again.');
 
   const componentProps = {

@@ -8,6 +8,7 @@ import { IoIosNotifications } from "react-icons/io";
 import { FiTrendingUp, FiDollarSign, FiAlertCircle } from "react-icons/fi";
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../components/supabase'
+import Loader from '../components/loader'
 
 
 const Dashboard = () => {
@@ -38,7 +39,7 @@ const [formattedTotals, setFormattedTotals] = useState({
   });
 
 
-  const {currencySymbol, currency, setDisplayDonateModal, setDisplayBpsModal} = useInvoice()
+  const {currencySymbol, currency, setDisplayDonateModal, setDisplayBpsModal, isLoading, setIsLoading} = useInvoice()
 
   const userId = localStorage.getItem('userId')
 
@@ -56,6 +57,7 @@ const [formattedTotals, setFormattedTotals] = useState({
     const fetchInvoiceData = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       const accessToken = session?.access_token;
+      setIsLoading(true)
 
       try {
         const { data } = await axios.get(`https://claukk-backend.onrender.com/api/users/invoice-details/${userId}`, {
@@ -107,6 +109,7 @@ const [formattedTotals, setFormattedTotals] = useState({
 
         setIssuedDates(formattedDates);
         setIssuedInvoiceAmounts(formattedChartData.map(d => d.accumulatedAmount));
+        setIsLoading(false)
 
       } catch (err) {
         console.error('Error fetching invoices:', err);
@@ -217,9 +220,15 @@ useEffect(() => {
     }, []);
 
     
+    
  
 
   return (
+    <>
+    {isLoading ?
+      <Loader/>
+    
+    : 
     <>
       <Sidebar />
       <div className='mx-[50px] mt-[50px]'>
@@ -370,6 +379,8 @@ useEffect(() => {
           </div>
         </div>
       </div>
+    </>
+      }
     </>
   )
 }

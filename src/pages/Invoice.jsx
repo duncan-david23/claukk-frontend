@@ -17,7 +17,7 @@ import { supabase } from '../components/supabase';
 import { MdOutlineDeleteForever } from "react-icons/md";
 import { IoChevronBackCircle } from "react-icons/io5";
 import { IoChevronForwardCircle } from "react-icons/io5";
-
+import Loader from '../components/loader'
 
 
 
@@ -25,7 +25,7 @@ import { IoChevronForwardCircle } from "react-icons/io5";
 const Invoice = () => {
   const navigate = useNavigate();
   const userId = localStorage.getItem('userId');
-  const { invoiceStatus, setInvoiceStatus, setDisplayConfirmModal,targetDeleteId, setTargetDeleteId, confirmStatus, setInvoiceNumberValue, invoiceInitials, setInvoiceInitials, currency, setDisplayTemplatesModal, currencySymbol } = useInvoice();
+  const { invoiceStatus, setInvoiceStatus,setIsLoading, isLoading, setDisplayConfirmModal,targetDeleteId, setTargetDeleteId, confirmStatus, setInvoiceNumberValue, invoiceInitials, setInvoiceInitials, currency, setDisplayTemplatesModal, currencySymbol } = useInvoice();
   const [invData, setInvData] = useState([]);
   const [msg, setMsg] = useState('');
   const [updtPtPaymentValue, setUpdtPtPaymentValue] = useState('');
@@ -122,6 +122,7 @@ const Invoice = () => {
     const fetchInvoiceData = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       const accessToken = session?.access_token
+      setIsLoading(true)
       try {
         const result = await axios.get(`https://claukk-backend.onrender.com/api/users/invoice-details/${userId}`, {
                     headers: {
@@ -145,6 +146,7 @@ const Invoice = () => {
         if (!searchTerm) {
           setInvData(sortedData)
         }
+        setIsLoading(false)
 
       } catch (error) {
         console.error("an error occurred while fetching invoice data", error);
@@ -199,6 +201,11 @@ const handleDeleteInvoice = async (id) => {
 
   return (
     <>
+    {isLoading ? 
+      <Loader/>
+    :
+      <>
+    
       <Sidebar />
       <div className='relative pt-[50px] px-[15px] md:ml-[-120px] lg:ml-[1px]'>
         <div className=' mt-[-20px] flex gap-[7px] items-center'>
@@ -320,6 +327,8 @@ const handleDeleteInvoice = async (id) => {
           }
         </div>
       </div>
+      </>
+      }
     </>
   )
 }

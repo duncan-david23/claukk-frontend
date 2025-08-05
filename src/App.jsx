@@ -40,19 +40,19 @@ const App = () => {
 
 
 
-  const [loading, setLoading] = useState(true);
-  const [auth, setAuth] = useState(false);
+  // const [loading, setLoading] = useState(true);
+  // const [auth, setAuth] = useState(false);
 
 
-    const isAuthenticated = () => {
-      return localStorage.getItem("accessToken") !== null;
-    };
+  //   const isAuthenticated = () => {
+  //     return localStorage.getItem("accessToken") !== null;
+  //   };
 
 
   // Check if the user is authenticated
-  const PrivateRoute = ({ children }) => {
-    return isAuthenticated() ? children : <Navigate to="/login" />;
-  };
+  // const PrivateRoute = ({ children }) => {
+  //   return isAuthenticated() ? children : <Navigate to="/login" />;
+  // };
 
   
 // useEffect(() => {
