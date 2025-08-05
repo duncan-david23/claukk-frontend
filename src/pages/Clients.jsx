@@ -11,7 +11,7 @@ import { GrFormView } from "react-icons/gr";
 import { useInvoice } from '../contexts/InvoiceContext';
 import { IoChevronBackCircle } from "react-icons/io5";
 import { IoChevronForwardCircle } from "react-icons/io5";
-import Loader from '../components/loader'
+import Loader from '../components/Loader'
 
 
 const Clients = () => {

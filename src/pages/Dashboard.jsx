@@ -8,7 +8,7 @@ import { IoIosNotifications } from "react-icons/io";
 import { FiTrendingUp, FiDollarSign, FiAlertCircle } from "react-icons/fi";
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../components/supabase'
-import Loader from '../components/loader'
+import Loader from '../components/Loader'
 
 
 const Dashboard = () => {

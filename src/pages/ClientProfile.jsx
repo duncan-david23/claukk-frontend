@@ -15,7 +15,7 @@ import { supabase } from '../components/supabase';
 import { BsFillSendFill } from "react-icons/bs";
 import { CgEditBlackPoint } from "react-icons/cg";
 import { CiUser } from "react-icons/ci";
-import Loader from '../components/loader'
+import Loader from '../components/Loader'
 
 
 const ClientProfile = () => {

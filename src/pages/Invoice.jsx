@@ -17,7 +17,7 @@ import { supabase } from '../components/supabase';
 import { MdOutlineDeleteForever } from "react-icons/md";
 import { IoChevronBackCircle } from "react-icons/io5";
 import { IoChevronForwardCircle } from "react-icons/io5";
-import Loader from '../components/loader'
+import Loader from '../components/Loader'
 
 
 
