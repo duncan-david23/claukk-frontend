@@ -90,11 +90,11 @@ const handlMenuNav = (navItem) => {
   const year = new Date().getFullYear();
 
   const handleLoginRoute = () => {
-    window.location.href = 'https://claukkinvoice.netlify.app/login';
+    window.location.href = '/login';
   };
 
   const handleSignUpRoute = () => {
-    window.location.href = 'https://claukkinvoice.netlify.app/signup';
+    window.location.href = '/signup';
   };
 
   return (

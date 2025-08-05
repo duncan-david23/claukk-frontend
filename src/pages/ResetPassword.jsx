@@ -35,7 +35,7 @@ const ResetPassword = () => {
         } else {
             setMsg('✅ Password successfully reset! You can now log in.');
             setTimeout(() => {
-                window.location.href = 'https://claukkinvoice.netlify.app/login'
+                window.location.href = '/login'
             }, 3000);
         }
 

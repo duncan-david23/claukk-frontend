@@ -35,7 +35,7 @@ const DonateModal = () => {
     text: 'Donate Now',
     onSuccess: () => {
       setDisplayDonateModal(false);
-      navigate('https://claukkinvoice.netlify.app/dashboard/thankyou');
+      navigate('/dashboard/thankyou');
       setDonationAmount(0); // Reset donation amount after successful transaction
 
     },

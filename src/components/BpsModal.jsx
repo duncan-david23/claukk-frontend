@@ -70,7 +70,7 @@ const BpsModal = ({ onClose }) => {
     localStorage.setItem('business_name', result.data.data.bsname);
     setCustomColor( result.data.data.bscolor)
     notify();
-    window.location.assign('https://claukkinvoice.netlify.app/dashboard');
+    window.location.assign('/dashboard');
   } catch (error) {
     toast.error('Error updating profile');
     console.error('Error updating profile:', error);
