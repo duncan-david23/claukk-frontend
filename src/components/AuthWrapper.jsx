@@ -1,7 +1,6 @@
 import React, {useState, useEffect} from "react";
 import { supabase } from "./supabase";
 import { Navigate } from "react-router";
-import Loader from "./loader";
 
 const AuthWrapper = ({ children }) => {
   const [authenticated, setAuthenticated] = useState(false);
