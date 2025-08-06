@@ -134,7 +134,7 @@ const handleSubmit = async (e)=> {
             </div>
 
             <div className='flex items-center justify-between mt-[25px] border-l-2 bg-slate-100 rounded-lg focus:outline-none pr-[15px] w-full'>
-              <input type={showPassword ? 'text' : 'password'} id='password' name='password' placeholder='************' value={formData.password} onChange={handleChange} required={true} className=' py-[7px] px-5 bg-transparent w-full outline-none border-none '/>
+              <input type={showPassword ? 'text' : 'password'} id='password' name='password' placeholder='password' value={formData.password} onChange={handleChange} required={true} className=' py-[7px] px-5 bg-transparent w-full outline-none border-none '/>
               <MdOutlineRemoveRedEye onClick={()=> setShowPassword(prev => !prev)} className='cursor-pointer' />
             </div>
             
