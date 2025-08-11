@@ -68,7 +68,7 @@ const { displayConfirmClientDeleteModal,setIsLoading, isLoading,  setDisplayConf
       }
     }
     fetchClientsData();
-  },[userId, searchTerm])
+  },[userId])
 
   const indexOfLastInvoice = currentPage * invoicesPerPage;
   const indexOfFirstInvoice = indexOfLastInvoice - invoicesPerPage;

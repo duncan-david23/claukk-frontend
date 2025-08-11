@@ -153,7 +153,7 @@ const Invoice = () => {
       }
     }
     fetchInvoiceData();
-  }, [userId, searchTerm])
+  }, [userId])
 
   useEffect(() => {
     const delayDeBounce = setTimeout(async () => {
@@ -161,7 +161,7 @@ const Invoice = () => {
       const accessToken = session?.access_token
       if (searchTerm) {
         try {
-          setLoading(true);
+          
           const response = await axios.get(`https://claukk-backend.onrender.com/api/users/search-invoice/${userId}`, {
                 headers: {
                   Authorization: `Bearer ${accessToken}`,
@@ -183,7 +183,6 @@ const Invoice = () => {
         } catch (err) {
           console.error('Search error:', err);
         } finally {
-          setLoading(false);
         }
       }
     }, 500);
@@ -199,11 +198,20 @@ const handleDeleteInvoice = async (id) => {
 }
 
 
+const handleSearchTerm = (e)=> {
+  e.preventDefault();
+  setSearchTerm(e.target.value)
+  setLoading(false)
+}
+
+
   return (
     <>
-    {isLoading ? 
+     {
+      isLoading ?
       <Loader/>
-    :
+      :
+   
       <>
     
       <Sidebar />
@@ -217,7 +225,7 @@ const handleDeleteInvoice = async (id) => {
           <div className='flex justify-center mt-[8px]'>
             <div className='flex gap-[10px] items-center w-[300px] border border-gray-200  rounded-lg py-[8px] px-[15px] '>
               <CiSearch className='text-xl' />
-              <input type="text" placeholder='search ...' className='bg-transparent border-none outline-none' value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+              <input type="text" placeholder='search ...' className='bg-transparent border-none outline-none' value={searchTerm} onChange={handleSearchTerm} />
             </div>
           </div>
 
@@ -245,6 +253,7 @@ const handleDeleteInvoice = async (id) => {
               </thead>
 
               <tbody>
+                 
                 {currentInvoices.map((item) => {
                   const colors = item.invoice_status === "overdue" ? "overdue" : item.invoice_status === "unpaid" ? "unpaid" : item.invoice_status === "paid" ? "paid" : item.invoice_status === "cancelled" ? "cancelled" : item.invoice_status === "partpayment" ? "partpayment" : "";
 
@@ -257,7 +266,9 @@ const handleDeleteInvoice = async (id) => {
                   const updateIssueDate = isudate.toISOString().split('T')[0];
                   const updateInvoiceAmount = new Intl.NumberFormat('en-US', {style:'decimal', minimumFractionDigits:2, maximumFractionDigits:2}).format(item.invoice_amount);
 
+                 
                   return (
+                    
                     <tr key={item.id} className='hover:bg-slate-200 '>
                       <td className='border-t  text-left pl-[15px] py-[15px] font-thin text-gray-400 '>{item.invoice_number}</td>
                       <td className='border-t text-left pl-[15px] py-[15px] font-thin'>{updateIssueDate}</td>
@@ -328,8 +339,9 @@ const handleDeleteInvoice = async (id) => {
         </div>
       </div>
       </>
-      }
+}
     </>
+    
   )
 }
 
