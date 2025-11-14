@@ -11,232 +11,191 @@ import { GrFormView } from "react-icons/gr";
 import { useInvoice } from '../contexts/InvoiceContext';
 import { IoChevronBackCircle } from "react-icons/io5";
 import { IoChevronForwardCircle } from "react-icons/io5";
-import Loader from '../components/Loader'
-
 
 const Clients = () => {
 
-const { displayConfirmClientDeleteModal,setIsLoading, isLoading,  setDisplayConfirmClientDeleteModal, setTargetDeleteId} = useInvoice();
+  const { setIsLoading, setDisplayConfirmClientDeleteModal, setTargetDeleteId } = useInvoice();
   const userId = localStorage.getItem('userId');
 
-  const [clientData, setClientData] = useState()
-  const [showNoDataMsg, setShowNoDataMsg] = useState(true)
-  const [searchTerm ,setSearchTerm] = useState()
-  const [loading, setLoading] = useState(false)
+  const [clientData, setClientData] = useState([]);
+  const [allClientData, setAllClientData] = useState([]);  // FULL DATA STORED HERE
+  const [showNoDataMsg, setShowNoDataMsg] = useState(true);
+  const [searchTerm ,setSearchTerm] = useState("");
 
-  // pagination state
+  // pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const [invoicesPerPage] = useState(10);
+  const [clientsPerPage] = useState(10);
 
-  // pagination logic
-  
-  const accessToken = localStorage.getItem('accessToken');
   const navigate = useNavigate();
 
   const handleClientProfilePage = (idx) => {
-      navigate(`/dashboard/clients/client-profile/${idx}`)
-  }
+    navigate(`/dashboard/clients/client-profile/${idx}`);
+  };
 
-  // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+  // FETCH CLIENTS ONCE
+  useEffect(() => {
+    const fetchClientsData = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.access_token;
 
-  useEffect(()=> {
-    const fetchClientsData = async ()=> {
-      const { data: { session } } = await supabase.auth.getSession()
-      const accessToken = session?.access_token
-      setIsLoading(true)
+      setIsLoading(true);
+
       try {
-          const result = await axios.get(`https://claukk-backend.onrender.com/api/users/clients-data/${userId}`, {
-                    headers: {
-                    Authorization: `Bearer ${accessToken}`, // add token to request
-                    },
-                });
-          const response = result.data; 
-          setClientData(response)
-          if (response && response.length > 0) {
-              setShowNoDataMsg(false);
+        const result = await axios.get(
+          `https://claukk-backend.onrender.com/api/users/clients-data/${userId}`,
+          {
+            headers: { Authorization: `Bearer ${accessToken}` }
           }
+        );
 
-          if (!searchTerm) {
-            setClientData(response)
-          }
-          setIsLoading(false)
+        const response = result.data;
+
+        setAllClientData(response);     // SAVE FULL ARRAY
+        setClientData(response);        // DISPLAY LIST
+
+        if (response.length > 0) setShowNoDataMsg(false);
 
       } catch (error) {
-          console.error("an error occurred while fetching client data", error);
+        console.error("Error fetching client data:", error);
+      } finally {
+        setIsLoading(false);
       }
-    }
+    };
+
     fetchClientsData();
-  },[userId])
+  }, [userId]);
 
-  const indexOfLastInvoice = currentPage * invoicesPerPage;
-  const indexOfFirstInvoice = indexOfLastInvoice - invoicesPerPage;
-  const currentClientData = clientData?.slice(indexOfFirstInvoice, indexOfLastInvoice);
+  // LOCAL SEARCH (NO BACKEND CALL)
+  useEffect(() => {
+    if (!searchTerm || searchTerm.trim() === "") {
+      setClientData(allClientData);
+      return;
+    }
 
+    const filtered = allClientData.filter((client) =>
+      client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.phone.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
-      
+    setClientData(filtered);
+    setCurrentPage(1);  // Reset pagination when searching
 
- useEffect(()=> {
-
-      const delayDeBounce = setTimeout(async ()=> {
-        const { data: { session } } = await supabase.auth.getSession()
-      const accessToken = session?.access_token
-        if (searchTerm) {
-          try {
-            setLoading(true);
-            const response = await axios.get(`https://claukk-backend.onrender.com/api/users/search-client/${userId}`, {
-                headers: {
-                  Authorization: `Bearer ${accessToken}`,
-                },
-                params: {
-                  term: searchTerm,
-                }
-              });
-            // setSearchResults(response.data);
-            console.log(response.data)
-            if (response.data.length > 0){
-              setClientData(response.data)
-            } 
-
-          } catch (err) {
-            console.error('Search error:', err);
-
-          } finally {
-            setLoading(false);
-          }
-        }
-      }, 500);
-
-      return ()=> clearTimeout(delayDeBounce);
-
- }, [searchTerm])
+  }, [searchTerm, allClientData]);
 
 
+  // pagination calculations
+  const indexOfLastClient = currentPage * clientsPerPage;
+  const indexOfFirstClient = indexOfLastClient - clientsPerPage;
+  const currentClientData = clientData.slice(indexOfFirstClient, indexOfLastClient);
 
- const handleDeleteClient = (id)=> {
-  setDisplayConfirmClientDeleteModal(true)
-  setTargetDeleteId(id)
- }
-
-
+  const handleDeleteClient = (id) => {
+    setDisplayConfirmClientDeleteModal(true);
+    setTargetDeleteId(id);
+  };
 
   return (
     <>
-    {
-      isLoading ?
-      <Loader/>
-      :
-      <>
-    <Sidebar/>
-    <div className='relative pt-[50px] px-[15px] md:ml-[-120px] lg:ml-[1px]'>
-      <div className='mt-[-20px] flex gap-[7px] items-center'>
-      <div><p className='items-center text-lg bg-purple-600 rounded-full h-[15px] w-[15px]'></p></div>
-      <h1 className='font-thin text-2xl text-black ' >Clients</h1>
-      </div>
+      <Sidebar/>
 
-    <div className=' flex items-center justify-between h-[80px] py-[10px] mt-[10px] px-[5px] rounded-lg'>
-           <div className='flex justify-center mt-[8px] flex-start'>
-            <div className='flex gap-[10px] items-center w-[300px] border border-gray-200  rounded-lg py-[8px] px-[15px] '>
-              <CiSearch className='text-xl'/>
-              <input type="text" placeholder='search ...'  className='bg-transparent border-none outline-none' value={searchTerm} onChange={(e)=> setSearchTerm(e.target.value)} />
-            </div>
+      <div className='relative pt-[50px] px-[15px] md:ml-[-120px] lg:ml-[1px]'>
+
+        <div className='mt-[-20px] flex gap-[7px] items-center'>
+          <div><p className='text-lg bg-purple-600 rounded-full h-[15px] w-[15px]'></p></div>
+          <h1 className='font-thin text-2xl text-black'>Clients</h1>
+        </div>
+
+        {/* SEARCH BAR */}
+        <div className='flex items-center justify-between h-[80px] py-[10px] mt-[10px] px-[5px] rounded-lg'>
+          <div className='flex gap-[10px] items-center w-[300px] border border-gray-200 rounded-lg py-[8px] px-[15px]'>
+            <CiSearch className='text-xl' />
+            <input
+              type="text"
+              placeholder='search ...'
+              className='bg-transparent border-none outline-none'
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
-
-        
-          
-    </div>
-      <div className='  min-h-[100vh] mt-[20px]'>
-
-          
-          
+        </div>
 
 
-        <div className=' flex justify-center'>
-         
+        {/* TABLE */}
+        <div className='mt-[20px]'>
           <table className='border rounded-lg w-full text-sm'>
             <thead>
               <tr>
-                <th className='text-left pl-[15px] py-[12px] border-b  cursor-pointer bg-gray-100 text-gray-500 font-thin hover:text-purple-700'>Client ~</th>
-                <th className='text-left pl-[15px] py-[12px] border-b  cursor-pointer bg-gray-100 text-gray-500 font-thin hover:text-purple-700'>Client Name</th>
-                <th className='text-left pl-[15px] py-[12px] border-b  cursor-pointer bg-gray-100 text-gray-500 font-thin hover:text-purple-700'>Client Email</th>
-                <th className='text-left pl-[15px] py-[12px] border-b  cursor-pointer bg-gray-100 text-gray-500 font-thin hover:text-purple-700'>Client Phone</th>
-                <th className='text-left pl-[15px] py-[12px] border-b  cursor-pointer bg-gray-100 text-gray-500 font-thin hover:text-purple-700'>Actions</th>
-                
-           
+                <th className='pl-[15px] py-[12px] text-left bg-gray-100 text-gray-500 font-thin'>Client ~</th>
+                <th className='pl-[15px] py-[12px] text-left bg-gray-100 text-gray-500 font-thin'>Client Name</th>
+                <th className='pl-[15px] py-[12px] text-left bg-gray-100 text-gray-500 font-thin'>Client Email</th>
+                <th className='pl-[15px] py-[12px] text-left bg-gray-100 text-gray-500 font-thin'>Client Phone</th>
+                <th className='pl-[15px] py-[12px] text-left bg-gray-100 text-gray-500 font-thin'>Actions</th>
               </tr>
             </thead>
 
             <tbody>
+              {currentClientData.map((item) => (
+                <tr key={item.id}>
+                  <td className='pl-[15px] py-[15px] text-2xl'>
+                    <div className='w-[40px] h-[40px] flex items-center justify-center bg-gray-200 rounded-full'>
+                      <FaUser />
+                    </div>
+                  </td>
 
-                {currentClientData ?.map((item)=> {
-                  const cInitial = item.name.slice(0,1)
+                  <td className='pl-[15px] py-[15px]'>{item.name}</td>
+                  <td className='pl-[15px] py-[15px] text-gray-500'>{item.email}</td>
+                  <td className='pl-[15px] py-[15px]'>{item.phone}</td>
 
-                  return (
-                    <tr key={item.id} className=' cursor-pointer'>
-                      <td className=' text-left pl-[15px] py-[5px] text-3xl font-bold text-black' >
-                        <div className='w-[50px] text-xl flex justify-center items-center h-[50px] rounded-full '>
-                          <FaUser />
-                        </div>
-                      </td>
-                      <td className=' text-left pl-[15px] py-[15px] font-thin '>{item.name}</td>
-                      <td className=' text-left pl-[15px] py-[15px] font-thin text-gray-500'>{item.email}</td>
-                      <td className=' text-left pl-[15px] py-[15px] font-thin '>{item.phone}</td>
-                      <td className=' text-left pl-[15px] py-[15px] font-thin flex gap-[20px] items-center'>
-                        <GrFormView onClick={()=> handleClientProfilePage(item.id)} className='text-purple-500 text-3xl hover:scale-150 transition-all cursor-pointer' />
-                        {/* <button className='py-[5px] px-[8px] bg-black text-white  hover:scale-110 rounded-lg transition-all'  onClick={()=> handleClientProfilePage(item.id)}>View</button> */}
-                        <td className='border-t text-left pl-[15px] py-[15px] font-thin'><MdOutlineDeleteForever onClick={()=> handleDeleteClient(item.id)} className='text-red-500 text-xl hover:scale-150 transition-all cursor-pointer' /></td>
-                        
-                      </td>
-                    </tr>
-                  )
-                })
-                }
-                      
+                  <td className='pl-[15px] py-[15px] flex gap-[20px] items-center'>
+                    <GrFormView
+                      onClick={() => handleClientProfilePage(item.id)}
+                      className='text-purple-500 text-3xl cursor-pointer hover:scale-125 transition-all'
+                    />
 
+                    <MdOutlineDeleteForever
+                      onClick={() => handleDeleteClient(item.id)}
+                      className='text-red-500 text-xl cursor-pointer hover:scale-125 transition-all'
+                    />
+                  </td>
+                </tr>
+              ))}
             </tbody>
-
           </table>
-
-                
         </div>
 
-                 {/* Pagination Controls */}
-          <div className="flex justify-center my-4 gap-2">
-            <button
-              onClick={() => paginate(currentPage - 1)}
-              disabled={currentPage === 1}
-              className=" disabled:opacity-50 text-xl"
-            >
-              <IoChevronBackCircle size={20} />
-            </button>
-            
-            <span className="px-4 py-[2px] text-xs">
-              {currentPage} of {Math.ceil(clientData?.length / invoicesPerPage)}
-            </span>
-            
-            <button
-              onClick={() => paginate(currentPage + 1)}
-              disabled={indexOfLastInvoice >= clientData?.length}
-             className="  disabled:opacity-50 text-xl"
-            >
-                <IoChevronForwardCircle size={20} />
-            </button>
+
+        {/* PAGINATION */}
+        <div className="flex justify-center my-4 gap-2">
+          <button
+            onClick={() => paginate(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            <IoChevronBackCircle size={20} />
+          </button>
+
+          <span className="px-4 py-[2px] text-xs">
+            {currentPage} of {Math.ceil(clientData.length / clientsPerPage)}
+          </span>
+
+          <button
+            onClick={() => paginate(currentPage + 1)}
+            disabled={indexOfLastClient >= clientData.length}
+          >
+            <IoChevronForwardCircle size={20} />
+          </button>
+        </div>
+
+        {showNoDataMsg && (
+          <div className='flex justify-center items-center h-[300px]'>
+            <h1 className='text-gray-400'>No data available</h1>
           </div>
+        )}
 
-
-                {showNoDataMsg &&
-                <div className='flex justify-center items-center h-[300px]'>
-                    <h1 className='text-gray-400'>No data available</h1>
-                </div>
-                }
-                
-    </div>            
-    </div>
+      </div>
     </>
-     }
-    </>
-  )
-}
+  );
+};
 
-export default Clients
+export default Clients;

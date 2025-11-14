@@ -225,11 +225,7 @@ useEffect(() => {
 
   return (
     <>
-    {isLoading ?
-      <Loader/>
-    
-    : 
-    <>
+   
       <Sidebar />
       <div className='mx-[50px] mt-[50px]'>
         <div className='absolute lg:top-[20px] lg:right-[30px] top-[20px] right-[-100px]'>
@@ -380,8 +376,7 @@ useEffect(() => {
         </div>
       </div>
     </>
-      }
-    </>
+   
   )
 }
 

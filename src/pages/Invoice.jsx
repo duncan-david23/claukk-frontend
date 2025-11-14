@@ -11,209 +11,197 @@ import Sidebar from '../components/Sidebar'
 import { useInvoice } from '../contexts/InvoiceContext';
 import axios from 'axios'
 import toast, { Toaster } from 'react-hot-toast';
-import { FaCirclePlus } from "react-icons/fa6";
-import { FaCircleCheck } from "react-icons/fa6";
+import { FaCirclePlus, FaCircleCheck } from "react-icons/fa6";
 import { supabase } from '../components/supabase';
 import { MdOutlineDeleteForever } from "react-icons/md";
-import { IoChevronBackCircle } from "react-icons/io5";
-import { IoChevronForwardCircle } from "react-icons/io5";
+import { IoChevronBackCircle, IoChevronForwardCircle } from "react-icons/io5";
 import Loader from '../components/Loader'
-
-
-
 
 const Invoice = () => {
   const navigate = useNavigate();
   const userId = localStorage.getItem('userId');
-  const { invoiceStatus, setInvoiceStatus,setIsLoading, isLoading, setDisplayConfirmModal,targetDeleteId, setTargetDeleteId, confirmStatus, setInvoiceNumberValue, invoiceInitials, setInvoiceInitials, currency, setDisplayTemplatesModal, currencySymbol } = useInvoice();
+  const {
+    invoiceStatus,
+    setInvoiceStatus,
+    setIsLoading,
+    isLoading,
+    setDisplayConfirmModal,
+    targetDeleteId,
+    setTargetDeleteId,
+    confirmStatus,
+    setInvoiceNumberValue,
+    invoiceInitials,
+    setInvoiceInitials,
+    currency,
+    setDisplayTemplatesModal,
+    currencySymbol
+  } = useInvoice();
+
   const [invData, setInvData] = useState([]);
+  const [originalData, setOriginalData] = useState([]); // keep full fetched copy for client filtering
   const [msg, setMsg] = useState('');
   const [updtPtPaymentValue, setUpdtPtPaymentValue] = useState('');
   const [showUpdateBtn, setShowUpdateBtn] = useState(true)
   const [activeRowId, setActiveRowId] = useState(null);
   const [showNoDataMsg, setShowNoDataMsg] = useState(true)
-  const [searchTerm, setSearchTerm] = useState()
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false)
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [invoicesPerPage] = useState(10); // Show 10 invoices per page
 
   const notify = () => toast.success(msg);
-  const accessToken = localStorage.getItem('accessToken');
 
   // Calculate current invoices to display
   const indexOfLastInvoice = currentPage * invoicesPerPage;
   const indexOfFirstInvoice = indexOfLastInvoice - invoicesPerPage;
   const currentInvoices = invData.slice(indexOfFirstInvoice, indexOfLastInvoice);
-  
+
   // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+  // Toggle part payment row
   const showPartPaymentModal = (idx) => {
     setShowUpdateBtn(false)
     setActiveRowId((prevId) => (prevId === idx ? null : idx))
   }
 
+  // Submit part payment to backend and update UI
   const handlePartPaymentData = async (idx) => {
-    const { data: { session } } = await supabase.auth.getSession()
-    const accessToken = session?.access_token
-    setShowUpdateBtn(true)
-    setActiveRowId((prevId) => (prevId === idx ? null : idx))
-    const partPayment = {
-      part_payment: updtPtPaymentValue
-    }
-
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const accessToken = session?.access_token
+      setShowUpdateBtn(true)
+      setActiveRowId((prevId) => (prevId === idx ? null : idx))
+
+      const partPayment = {
+        part_payment: updtPtPaymentValue
+      }
+
       const result = await axios.put(`https://claukk-backend.onrender.com/api/users/invoice-details/part-payment/${idx}`, partPayment, {
-                    headers: {
-                    Authorization: `Bearer ${accessToken}`, // add token to request
-                    },
-                });
-      const response = result.data
-      console.log(response)
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      const response = result.data;
+      setMsg(response.msg || 'Part payment updated');
+      // Update local invData to reflect new part payment amount (if API returns changed invoice, use that)
+      setInvData(prev => prev.map(item => item.id === idx ? { ...item, part_payment_amount: updtPtPaymentValue } : item));
+      setOriginalData(prev => prev.map(item => item.id === idx ? { ...item, part_payment_amount: updtPtPaymentValue } : item));
+      notify();
+      setUpdtPtPaymentValue('');
     } catch (error) {
       console.error("an error occurred while updating invoice partial payment", error);
+      toast.error("Failed to update part payment");
     }
   }
 
-
-  const handleChangeValue = async (e, idx)=> {
-        const sValue = e.target.value;
-        const statusValue = {status_value:sValue}
-          try {
-            const { data: { session } } = await supabase.auth.getSession()
-            const accessToken = session?.access_token
-            const result = await axios.put(`https://claukk-backend.onrender.com/api/users/invoice-details/${idx}`, statusValue, {
-                    headers: {
-                    Authorization: `Bearer ${accessToken}`, // add token to request
-                    },
-                });
-            const response = result.data
-            setMsg(response.msg)
-    
-            setInvData((prevData) =>
-              prevData.map((item) =>
-                  item.id === idx ? { ...item, invoice_status: sValue } : item
-              )
-          );
-    
-    
-            notify();
-            
-        } catch (error) {
-            console.error("an error occurred while updating invoice status", error);
-        }
-    
-      }
-
-
-
-
-
-
-  const handleDisplayTemplateModal = ()=> {
-    setDisplayTemplatesModal(true); 
-    
- }
-
-  useEffect(() => {
-    const fetchInvoiceData = async () => {
+  // Update invoice status on backend and update UI optimistically
+  const handleChangeValue = async (e, idx) => {
+    const sValue = e.target.value;
+    const statusValue = { status_value: sValue }
+    try {
       const { data: { session } } = await supabase.auth.getSession()
       const accessToken = session?.access_token
-      setIsLoading(true)
+      const result = await axios.put(`https://claukk-backend.onrender.com/api/users/invoice-details/${idx}`, statusValue, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      const response = result.data
+      setMsg(response.msg || 'Status updated')
+
+      setInvData((prevData) =>
+        prevData.map((item) =>
+          item.id === idx ? { ...item, invoice_status: sValue } : item
+        )
+      );
+      setOriginalData((prevData) =>
+        prevData.map((item) =>
+          item.id === idx ? { ...item, invoice_status: sValue } : item
+        )
+      );
+
+      notify();
+    } catch (error) {
+      console.error("an error occurred while updating invoice status", error);
+      toast.error("Failed to update status");
+    }
+  }
+
+  const handleDisplayTemplateModal = () => {
+    setDisplayTemplatesModal(true);
+  }
+
+  // Fetch invoices once on mount
+  useEffect(() => {
+    const fetchInvoiceData = async () => {
       try {
+        setIsLoading(true)
+        const { data: { session } } = await supabase.auth.getSession()
+        const accessToken = session?.access_token
         const result = await axios.get(`https://claukk-backend.onrender.com/api/users/invoice-details/${userId}`, {
-                    headers: {
-                    Authorization: `Bearer ${accessToken}`, // add token to request
-                    },
-                });
-        const response = result.data
+          headers: {
+            Authorization: `Bearer ${accessToken}`, // add token to request
+          },
+        });
 
-        // Sort by date issued (newest first)
-        const sortedData = response.data.sort((a,b)=> {
-           return new Date(b.date_issued) - new Date(a.date_issued);
-        })
+        const response = result.data;
+        const sortedData = (response.data || []).sort((a, b) => {
+          return new Date(b.date_issued) - new Date(a.date_issued);
+        });
 
+        setInvData(sortedData);
+        setOriginalData(sortedData);
 
-        setInvData(sortedData)
-
-        if (response.data && response.data.length > 0) {
+        if (sortedData && sortedData.length > 0) {
           setShowNoDataMsg(false);
+        } else {
+          setShowNoDataMsg(true);
         }
-
-        if (!searchTerm) {
-          setInvData(sortedData)
-        }
-        setIsLoading(false)
-
       } catch (error) {
         console.error("an error occurred while fetching invoice data", error);
+        toast.error("Failed to load invoices");
+      } finally {
+        setIsLoading(false)
       }
     }
     fetchInvoiceData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId])
 
-  useEffect(() => {
-    const delayDeBounce = setTimeout(async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      const accessToken = session?.access_token
-      if (searchTerm) {
-        try {
-          
-          const response = await axios.get(`https://claukk-backend.onrender.com/api/users/search-invoice/${userId}`, {
-                headers: {
-                  Authorization: `Bearer ${accessToken}`,
-                },
-                params: {
-                  term: searchTerm,
-                }
-              });
-                console.log(response.data)
-                setMsg(response.data.msg)
-          if (response.data.length > 0) {
-            
-            const sortedData = response.data.sort((a,b)=> {
-              return new Date(b.date_issued) - new Date(a.date_issued);
-            })
-            
-            setInvData(sortedData)
-          }
-        } catch (err) {
-          console.error('Search error:', err);
-        } finally {
-        }
-      }
-    }, 500);
+  // Client-side search filtering (no backend calls)
+  const handleSearchTerm = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
 
-    return () => clearTimeout(delayDeBounce);
-  }, [searchTerm])
+    if (!value.trim()) {
+      setInvData(originalData);
+      setShowNoDataMsg((originalData || []).length === 0);
+      setCurrentPage(1);
+      return;
+    }
 
+    const lower = value.toLowerCase();
 
+    const filtered = (originalData || []).filter(item =>
+      (item.invoice_number && item.invoice_number.toString().toLowerCase().includes(lower)) ||
+      (item.client_name && item.client_name.toLowerCase().includes(lower)) ||
+      (item.invoice_status && item.invoice_status.toLowerCase().includes(lower))
+    );
 
-const handleDeleteInvoice = async (id) => {
-       setDisplayConfirmModal(true)
-        setTargetDeleteId(id)
-}
+    setInvData(filtered);
+    setShowNoDataMsg(filtered.length === 0);
+    setCurrentPage(1);
+  }
 
-
-const handleSearchTerm = (e)=> {
-  e.preventDefault();
-  setSearchTerm(e.target.value)
-  setLoading(false)
-}
-
+  const handleDeleteInvoice = async (id) => {
+    // just open confirm modal and set target – deletion flow should be handled by modal confirm elsewhere
+    setDisplayConfirmModal(true)
+    setTargetDeleteId(id)
+  }
 
   return (
     <>
-     {
-      isLoading ?
-      <Loader/>
-      :
-   
-      <>
-    
+      <Toaster />
       <Sidebar />
       <div className='relative pt-[50px] px-[15px] md:ml-[-120px] lg:ml-[1px]'>
         <div className=' mt-[-20px] flex gap-[7px] items-center'>
@@ -225,7 +213,13 @@ const handleSearchTerm = (e)=> {
           <div className='flex justify-center mt-[8px]'>
             <div className='flex gap-[10px] items-center w-[300px] border border-gray-200  rounded-lg py-[8px] px-[15px] '>
               <CiSearch className='text-xl' />
-              <input type="text" placeholder='search ...' className='bg-transparent border-none outline-none' value={searchTerm} onChange={handleSearchTerm} />
+              <input
+                type="text"
+                placeholder='search ...'
+                className='bg-transparent border-none outline-none'
+                value={searchTerm}
+                onChange={handleSearchTerm}
+              />
             </div>
           </div>
 
@@ -253,22 +247,22 @@ const handleSearchTerm = (e)=> {
               </thead>
 
               <tbody>
-                 
+
                 {currentInvoices.map((item) => {
                   const colors = item.invoice_status === "overdue" ? "overdue" : item.invoice_status === "unpaid" ? "unpaid" : item.invoice_status === "paid" ? "paid" : item.invoice_status === "cancelled" ? "cancelled" : item.invoice_status === "partpayment" ? "partpayment" : "";
 
                   const duDate = item.due_date;
                   const updDueDate = new Date(duDate)
-                  const updateDueDate = updDueDate.toISOString().split('T')[0];
+                  const updateDueDate = isNaN(updDueDate.getTime()) ? "" : updDueDate.toISOString().split('T')[0];
 
                   const isd = item.date_issued;
                   const isudate = new Date(isd);
-                  const updateIssueDate = isudate.toISOString().split('T')[0];
+                  const updateIssueDate = isNaN(isudate.getTime()) ? "" : isudate.toISOString().split('T')[0];
                   const updateInvoiceAmount = new Intl.NumberFormat('en-US', {style:'decimal', minimumFractionDigits:2, maximumFractionDigits:2}).format(item.invoice_amount);
 
-                 
+
                   return (
-                    
+
                     <tr key={item.id} className='hover:bg-slate-200 '>
                       <td className='border-t  text-left pl-[15px] py-[15px] font-thin text-gray-400 '>{item.invoice_number}</td>
                       <td className='border-t text-left pl-[15px] py-[15px] font-thin'>{updateIssueDate}</td>
@@ -317,11 +311,11 @@ const handleSearchTerm = (e)=> {
             >
               <IoChevronBackCircle size={20} />
             </button>
-            
+
             <span className="px-4 py-[2px] text-xs">
-              {currentPage} of {Math.ceil(invData.length / invoicesPerPage)}
+              {currentPage} of {Math.max(1, Math.ceil(invData.length / invoicesPerPage))}
             </span>
-            
+
             <button
               onClick={() => paginate(currentPage + 1)}
               disabled={indexOfLastInvoice >= invData.length}
@@ -338,11 +332,9 @@ const handleSearchTerm = (e)=> {
           }
         </div>
       </div>
-      </>
-}
     </>
-    
+
   )
 }
 
-export default Invoice
+export default Invoice;

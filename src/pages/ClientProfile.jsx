@@ -209,10 +209,7 @@ const ClientProfile = () => {
 
   return (
     <>
-    {isLoading ?
-        <Loader/>
-        :
-        <>
+
         <Sidebar/>
         <div className='px-[15px] md:ml-[-120px] lg:ml-[1px]'>
 
@@ -250,10 +247,10 @@ const ClientProfile = () => {
                           </div>
 
                       <div className='mt-[150px] flex gap-[15px]'>
-                        <div onClick={handleDisplayReminderModal} className='text-white lg:text-sm md:text-xs flex items-center justify-between gap-[10px] px-[15px] py-[8px] cursor-pointer text-center transition-all bg-purple-600 rounded-lg hover:scale-105 hover:bg-purple-800 '>
+                        {/* <div onClick={handleDisplayReminderModal} className='text-white lg:text-sm md:text-xs flex items-center justify-between gap-[10px] px-[15px] py-[8px] cursor-pointer text-center transition-all bg-purple-600 rounded-lg hover:scale-105 hover:bg-purple-800 '>
                           <button  >Send Reminder</button>
                           <BsFillSendFill size={18} />
-                        </div>
+                        </div> */}
 
                         <div onClick={handleClientUpdateForm}className='text-white lg:text-sm md:text-xs flex items-center justify-between gap-[10px] px-[15px] py-[8px] cursor-pointer text-center transition-all bg-purple-600 rounded-lg hover:scale-105 hover:bg-purple-800 '>
                           <button>Update Details</button>
@@ -398,8 +395,8 @@ const ClientProfile = () => {
         
         </div>
         </>
-        }
-    </>
+        
+    
   )
 }
 
